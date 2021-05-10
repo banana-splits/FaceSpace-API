@@ -97,4 +97,20 @@ router.patch('/posts/:id', requireToken, removeBlanks, (req, res, next) => {
     .catch(next)
 })
 
+// INDEX
+// GET /posts
+router.get('/posts', requireToken, (req, res, next) => {
+  Post.find()
+    .then(posts => {
+      // `posts` will be an array of Mongoose documents
+      // we want to convert each one to a POJO, so we use `.map` to
+      // apply `.toObject` to each one
+      return posts.map(post => post.toObject())
+    })
+    // respond with status 200 and JSON of the posts
+    .then(posts => res.status(200).json({ posts: posts }))
+    // if an error occurs, pass it to the handler
+    .catch(next)
+})
+
 module.exports = router
