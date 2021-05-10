@@ -56,6 +56,16 @@ router.get('/posts/:id', requireToken, (req, res, next) => {
     .catch(next)
 })
 
+// SHOW
+// GET /users/:id
+router.get('/users/:id', (req, res, next) => {
+  const id = req.params.id
+  User.findById(id)
+    .then(handle404)
+    .then(user => res.json({ user: user}))
+    .catch(next)
+})
+
 // DESTROY
 // DELETE /post/
 router.delete('/posts/:id', requireToken, (req, res, next) => {
