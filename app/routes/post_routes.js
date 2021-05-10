@@ -100,9 +100,6 @@ router.patch('/posts/:id', requireToken, removeBlanks, (req, res, next) => {
 // INDEX
 // GET /posts
 router.get('/posts', requireToken, (req, res, next) => {
-  req.body.post.owner = req.user.id
-  req.body.post.ownerEmail = req.user.email
-
   Post.find()
     .then(posts => {
       // `posts` will be an array of Mongoose documents

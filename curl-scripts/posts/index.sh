@@ -3,7 +3,7 @@ URL_PATH="/posts"
 
 curl "${API}${URL_PATH}" \
   --include \
-  --request POST \
+  --request GET \
   --header "Content-Type: application/json" \
   --header "Authorization: Bearer ${TOKEN}" \
 
