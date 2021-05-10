@@ -27,7 +27,7 @@ const requireToken = passport.authenticate('bearer', { session: false })
 const router = express.Router()
 
 // CREATE
-// POST /examples
+// POST /posts
 router.post('/posts', requireToken, (req, res, next) => {
   // set owner of new example to be current user
   req.body.post.owner = req.user.id
@@ -41,6 +41,35 @@ router.post('/posts', requireToken, (req, res, next) => {
     // if an error occurs, pass it off to our error handler
     // the error handler needs the error message and the `res` object so that it
     // can send an error message back to the client
+    .catch(next)
+})
+
+// SHOW
+// GET /posts/5a7db6c74d55bc51bdf39793
+router.get('/posts/:id', requireToken, (req, res, next) => {
+  // req.params.id will be set based on the `:id` in the route
+  Post.findById(req.params.id)
+    .then(handle404)
+    // if `findById` is succesful, respond with 200 and "post" JSON
+    .then(post => res.status(200).json({ post: post.toObject() }))
+    // if an error occurs, pass it to the handler
+    .catch(next)
+})
+
+// DESTROY
+// DELETE /post/
+router.delete('/posts/:id', requireToken, (req, res, next) => {
+  Post.findById(req.params.id)
+    .then(handle404)
+    .then(example => {
+      // throw an error if current user doesn't own `example`
+      requireOwnership(req, example)
+      // delete the example ONLY IF the above didn't throw
+      example.deleteOne()
+    })
+    .then(() => res.sendStatus(204))
+    // if an error occurs, pass it to the handler
+    // send back 204 and no content if the deletion succeeded
     .catch(next)
 })
 
