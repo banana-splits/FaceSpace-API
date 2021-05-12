@@ -15,11 +15,13 @@ const customErrors = require('../../lib/custom_errors')
 const handle404 = customErrors.handle404
 // we'll use this function to send 401 when a user tries to modify a resource
 // that's owned by someone else
+
 const requireOwnership = customErrors.requireOwnership
 
 // this is middleware that will remove blank fields from `req.body`, e.g.
 // { example: { title: '', text: 'foo' } } -> { example: { text: 'foo' } }
 const removeBlanks = require('../../lib/remove_blank_fields')
+
 // passing this as a second argument to `router.<verb>` will make it
 // so that a token MUST be passed for that route to be available
 // it will also set `req.user`
@@ -44,7 +46,10 @@ router.post('/posts/:postId/comments', requireToken, (req, res, next) => {
       Comment.create(req.body.comment)
       // if `create` is succesful, push the new comment into the post's comments array, then return the comment
         .then(comment => {
+          console.log('comment', comment, 'post', post)
           post.comments.push(comment)
+          console.log('post', post)
+          post.save()
           res.status(201).json({ comment: comment.toObject() })
         })
         // if an error occurs, pass it off to our error handler
@@ -55,6 +60,8 @@ router.post('/posts/:postId/comments', requireToken, (req, res, next) => {
     // if an error occurs, pass it to the handler
     .catch(next)
 })
+
+/*
 
 // SHOW
 // GET /posts/:id
@@ -142,5 +149,7 @@ router.get('/users/:id', requireToken, (req, res, next) => {
     // if an error occurs, pass it to the handler
     .catch(next)
 })
+
+*/
 
 module.exports = router
