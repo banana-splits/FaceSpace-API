@@ -61,11 +61,11 @@ router.get('/posts/:id', requireToken, (req, res, next) => {
 router.delete('/posts/:id', requireToken, (req, res, next) => {
   Post.findById(req.params.id)
     .then(handle404)
-    .then(example => {
+    .then(post => {
       // throw an error if current user doesn't own `example`
-      requireOwnership(req, example)
+      requireOwnership(req, post)
       // delete the example ONLY IF the above didn't throw
-      example.deleteOne()
+      post.deleteOne()
     })
     .then(() => res.sendStatus(204))
     // if an error occurs, pass it to the handler

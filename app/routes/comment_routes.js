@@ -59,80 +59,71 @@ router.post('/posts/:postId/comments', requireToken, (req, res, next) => {
     .catch(next)
 })
 
-/*
-
 // SHOW
-// GET /posts/:id
-router.get('/posts/:id', requireToken, (req, res, next) => {
-  // req.params.id will be set based on the `:id` in the route
-  Post.findById(req.params.id)
+// GET /posts/:postId/comments/:commentId
+router.get('/posts/:postId/comments/:commentId', requireToken, (req, res, next) => {
+  // req.params.commentId will be set based on the `:commentId` in the route
+  Comment.findById(req.params.commentId)
     .then(handle404)
     // if `findById` is succesful, respond with 200 and "post" JSON
-    .then(post => res.status(200).json({ post: post.toObject() }))
+    .then(comment => res.status(200).json({ comment: comment.toObject() }))
     // if an error occurs, pass it to the handler
     .catch(next)
 })
 
 // DESTROY
-// DELETE /post/
-router.delete('/posts/:id', requireToken, (req, res, next) => {
-  Post.findById(req.params.id)
+// DELETE /posts/:postId/comments/:commentId
+router.delete('/posts/:postId/comments/:commentId', requireToken, (req, res, next) => {
+  Post.findById(req.params.postId)
     .then(handle404)
-    .then(example => {
-      // throw an error if current user doesn't own `example`
-      requireOwnership(req, example)
-      // delete the example ONLY IF the above didn't throw
-      example.deleteOne()
+    .then(post => {
+      Comment.findById(req.params.commentId)
+        .then(handle404)
+        .then(comment => {
+          // throw an error if current user doesn't own `example`
+          requireOwnership(req, comment)
+          // delete the comment ONLY IF the above didn't throw
+          const indexToDelete = post.comments.findIndex(element => element._id.toString() === comment._id.toString())
+          // console.log('indexToDelete ', indexToDelete)
+          post.comments.splice(indexToDelete, 1)
+          comment.deleteOne()
+          post.save()
+          res.sendStatus(204)
+        })
+        .catch(next)
     })
-    .then(() => res.sendStatus(204))
     // if an error occurs, pass it to the handler
     // send back 204 and no content if the deletion succeeded
     .catch(next)
 })
 
-// UPDATE
-// PATCH /posts/:id
-router.patch('/posts/:id', requireToken, removeBlanks, (req, res, next) => {
-  // if the client attempts to change the `owner` or `comments` properties by including a new
-  // owner or comments, prevent that by deleting those key/value pairs
-  delete req.body.post.owner
-  delete req.body.post.comments
+// // UPDATE
+// // PATCH /posts/:postId/comments/:commentId
+// router.patch('/posts/:postId/comments/:commentId', requireToken, removeBlanks, (req, res, next) => {
+//   // if the client attempts to change the `owner` or `comments` properties by including a new
+//   // owner or comments, prevent that by deleting those key/value pairs
+//   delete req.body.post.owner
+//   delete req.body.post.comments
+//
+//   Post.findById(req.params.id)
+//     .then(handle404)
+//     .then(post => {
+//       // pass the `req` object and the Mongoose record to `requireOwnership`
+//       // it will throw an error if the current user isn't the owner
+//       requireOwnership(req, post)
+//
+//       // pass the result of Mongoose's `.update` to the next `.then`
+//       return post.updateOne(req.body.post)
+//     })
+//     // if that succeeded, return 204 and no JSON
+//     .then(() => res.sendStatus(204))
+//     // if an error occurs, pass it to the handler
+//     .catch(next)
+// })
 
-  Post.findById(req.params.id)
-    .then(handle404)
-    .then(post => {
-      // pass the `req` object and the Mongoose record to `requireOwnership`
-      // it will throw an error if the current user isn't the owner
-      requireOwnership(req, post)
-
-      // pass the result of Mongoose's `.update` to the next `.then`
-      return post.updateOne(req.body.post)
-    })
-    // if that succeeded, return 204 and no JSON
-    .then(() => res.sendStatus(204))
-    // if an error occurs, pass it to the handler
-    .catch(next)
-})
-
-// INDEX
-// GET /posts
-router.get('/posts', requireToken, (req, res, next) => {
-  Post.find()
-    .then(posts => {
-      // `posts` will be an array of Mongoose documents
-      // we want to convert each one to a POJO, so we use `.map` to
-      // apply `.toObject` to each one
-      return posts.map(post => post.toObject())
-    })
-    // respond with status 200 and JSON of the posts
-    .then(posts => res.status(200).json({ posts: posts }))
-    // if an error occurs, pass it to the handler
-    .catch(next)
-})
-
-// SHOW USER
-// GET /users/:id
-router.get('/users/:id', requireToken, (req, res, next) => {
+// INDEX A POST
+// GET /posts/:postId/comments
+router.get('/posts/:postId/comments', requireToken, (req, res, next) => {
   // req.params.id will be set based on the `:id` in the route
   Post.find({ owner: req.params.id })
     .then(handle404)
@@ -147,7 +138,5 @@ router.get('/users/:id', requireToken, (req, res, next) => {
     // if an error occurs, pass it to the handler
     .catch(next)
 })
-
-*/
 
 module.exports = router
