@@ -1,5 +1,6 @@
 const mongoose = require('mongoose')
-const commentSchema = require('./comment')
+const commentFile = require('./comment')
+const comment = commentFile.commentSchema
 
 const postSchema = new mongoose.Schema({
   text: {
@@ -15,7 +16,7 @@ const postSchema = new mongoose.Schema({
     ref: 'User',
     required: true
   },
-  comments: [commentSchema]
+  comments: [comment]
 }, {
   timestamps: true
 })

@@ -3,8 +3,10 @@ const express = require('express')
 // Passport docs: http://www.passportjs.org/docs/
 const passport = require('passport')
 
-// pull in Mongoose model for posts
+// pull in Mongoose models for posts and comments
 const Post = require('../models/post')
+const commentFile = require('../models/comment')
+const Comment = commentFile.commentModel
 // this is a collection of methods that help us detect situations when we need
 // to throw a custom error
 const customErrors = require('../../lib/custom_errors')
@@ -27,20 +29,30 @@ const requireToken = passport.authenticate('bearer', { session: false })
 const router = express.Router()
 
 // CREATE
-// POST /posts
-router.post('/posts', requireToken, (req, res, next) => {
-  // set owner of new example to be current user
-  req.body.post.owner = req.user.id
-  req.body.post.ownerEmail = req.user.email
+// POST /posts/:id/comments
+router.post('/posts/:postId/comments', requireToken, (req, res, next) => {
+  // set owner of new comment to be current user
+  req.body.comment.owner = req.user.id
+  req.body.comment.ownerEmail = req.user.email
 
-  Post.create(req.body.post)
-    // respond to succesful `create` with status 201 and JSON of new "example"
+  // req.params.id will be set based on the `:postId` in the route
+  console.log(req.params.postId)
+  Post.findById(req.params.postId)
+    .then(handle404)
+    // if `findById` is succesful, create a new comment and push it into the post's comments array
     .then(post => {
-      res.status(201).json({ post: post.toObject() })
+      Comment.create(req.body.comment)
+      // if `create` is succesful, push the new comment into the post's comments array, then return the comment
+        .then(comment => {
+          post.comments.push(comment)
+          res.status(201).json({ comment: comment.toObject() })
+        })
+        // if an error occurs, pass it off to our error handler
+        // the error handler needs the error message and the `res` object so that it
+        // can send an error message back to the client
+        .catch(next)
     })
-    // if an error occurs, pass it off to our error handler
-    // the error handler needs the error message and the `res` object so that it
-    // can send an error message back to the client
+    // if an error occurs, pass it to the handler
     .catch(next)
 })
 
