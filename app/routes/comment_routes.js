@@ -46,9 +46,7 @@ router.post('/posts/:postId/comments', requireToken, (req, res, next) => {
       Comment.create(req.body.comment)
       // if `create` is succesful, push the new comment into the post's comments array, then return the comment
         .then(comment => {
-          console.log('comment', comment, 'post', post)
           post.comments.push(comment)
-          console.log('post', post)
           post.save()
           res.status(201).json({ comment: comment.toObject() })
         })
