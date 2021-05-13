@@ -20,7 +20,7 @@ const requireOwnership = customErrors.requireOwnership
 
 // this is middleware that will remove blank fields from `req.body`, e.g.
 // { example: { title: '', text: 'foo' } } -> { example: { text: 'foo' } }
-const removeBlanks = require('../../lib/remove_blank_fields')
+// const removeBlanks = require('../../lib/remove_blank_fields')
 
 // passing this as a second argument to `router.<verb>` will make it
 // so that a token MUST be passed for that route to be available
@@ -124,17 +124,10 @@ router.delete('/posts/:postId/comments/:commentId', requireToken, (req, res, nex
 // INDEX A POST
 // GET /posts/:postId/comments
 router.get('/posts/:postId/comments', requireToken, (req, res, next) => {
-  // req.params.id will be set based on the `:id` in the route
-  Post.find({ owner: req.params.id })
+  Post.findById(req.params.postId)
     .then(handle404)
     // if `findById` is succesful, respond with 200 and "post" JSON
-    .then(posts => {
-      // `posts` will be an array of Mongoose documents
-      // we want to convert each one to a POJO, so we use `.map` to
-      // apply `.toObject` to each one
-      return posts.map(post => post.toObject())
-    })
-    .then(posts => res.status(200).json({ posts: posts }))
+    .then(post => res.status(200).json({ comments: post.comments.toObject() }))
     // if an error occurs, pass it to the handler
     .catch(next)
 })
