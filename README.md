@@ -1,5 +1,8 @@
 # FaceSpace
 
+## Description
+This API allows a client to do Create, Read, Update, and Destroy actions on Posts and Comments. It was created for the client app FaceSpace, but is generalized enough to be used for many other apps.
+
 ## Links
 - [Deployed API](https://rocky-beach-46261.herokuapp.com/)
 - [FaceSpace Client Repository](https://github.com/banana-splits/FaceSpace-Client)
