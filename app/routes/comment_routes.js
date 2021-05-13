@@ -108,23 +108,12 @@ router.patch('/posts/:postId/comments/:commentId', requireToken, removeBlanks, (
   Post.findById(req.params.postId)
     .then(handle404)
     .then(post => {
-      Comment.findById(req.params.commentId)
-        .then(handle404)
-        .then(comment => {
-          // throw an error if current user doesn't own comment
-          requireOwnership(req, comment)
-          // update the comment ONLY IF the above didn't throw
-          console.log('new', req.body)
-          console.log('old', comment)
-          comment.updateOne(req.body.comment)
-          comment.save()
-          post.save()
-          console.log('updated', comment)
-          return comment
-        })
-        .then(() => res.sendStatus(204))
-        .catch(next)
+      const comment = post.comments.id(req.params.commentId)
+      comment.set(req.body.comment)
+      return post.save()
     })
+    .then(() => res.sendStatus(204))
+    .catch(next)
 })
 
 // INDEX A POST
