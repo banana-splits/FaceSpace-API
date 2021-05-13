@@ -79,6 +79,7 @@ router.patch('/posts/:id', requireToken, removeBlanks, (req, res, next) => {
   // if the client attempts to change the `owner` or `comments` properties by including a new
   // owner or comments, prevent that by deleting those key/value pairs
   delete req.body.post.owner
+  delete req.body.post.ownerEmail
   delete req.body.post.comments
 
   Post.findById(req.params.id)
