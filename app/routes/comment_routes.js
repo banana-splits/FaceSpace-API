@@ -120,7 +120,7 @@ router.patch('/posts/:postId/comments/:commentId', requireToken, removeBlanks, (
           comment.save()
           post.save()
           console.log('updated', comment)
-          return post
+          return comment
         })
         .then(() => res.sendStatus(204))
         .catch(next)
