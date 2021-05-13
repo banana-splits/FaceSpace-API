@@ -20,7 +20,7 @@ const requireOwnership = customErrors.requireOwnership
 
 // this is middleware that will remove blank fields from `req.body`, e.g.
 // { example: { title: '', text: 'foo' } } -> { example: { text: 'foo' } }
-// const removeBlanks = require('../../lib/remove_blank_fields')
+const removeBlanks = require('../../lib/remove_blank_fields')
 
 // passing this as a second argument to `router.<verb>` will make it
 // so that a token MUST be passed for that route to be available
@@ -97,29 +97,24 @@ router.delete('/posts/:postId/comments/:commentId', requireToken, (req, res, nex
     .catch(next)
 })
 
-// // UPDATE
-// // PATCH /posts/:postId/comments/:commentId
-// router.patch('/posts/:postId/comments/:commentId', requireToken, removeBlanks, (req, res, next) => {
-//   // if the client attempts to change the `owner` or `comments` properties by including a new
-//   // owner or comments, prevent that by deleting those key/value pairs
-//   delete req.body.post.owner
-//   delete req.body.post.comments
-//
-//   Post.findById(req.params.id)
-//     .then(handle404)
-//     .then(post => {
-//       // pass the `req` object and the Mongoose record to `requireOwnership`
-//       // it will throw an error if the current user isn't the owner
-//       requireOwnership(req, post)
-//
-//       // pass the result of Mongoose's `.update` to the next `.then`
-//       return post.updateOne(req.body.post)
-//     })
-//     // if that succeeded, return 204 and no JSON
-//     .then(() => res.sendStatus(204))
-//     // if an error occurs, pass it to the handler
-//     .catch(next)
-// })
+// UPDATE
+// PATCH /posts/:postId/comments/:commentId
+router.patch('/posts/:postId/comments/:commentId', requireToken, removeBlanks, (req, res, next) => {
+  // if the client attempts to change the owner property by including a new
+  // owner, prevent that by deleting these key/value pairs
+  delete req.body.comment.owner
+  delete req.body.comment.ownerEmail
+
+  Post.findById(req.params.postId)
+    .then(handle404)
+    .then(post => {
+      const comment = post.comments.id(req.params.commentId)
+      comment.set(req.body.comment)
+      return post.save()
+    })
+    .then(() => res.sendStatus(204))
+    .catch(next)
+})
 
 // INDEX A POST
 // GET /posts/:postId/comments
